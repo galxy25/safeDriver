@@ -2,12 +2,12 @@
 import numpy as np
 import cv2
 
-def find_licence(image):
+def find_license(image):
   # convert the image to grayscale, blur it, and detect edges
   gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
   gray = cv2.GaussianBlur(gray, (5, 5), 0)
   edged = cv2.Canny(gray, 35, 125)
- 
+  cv2.imwrite('detect.png', edged) 
   # find the contours in the edged image and keep the largest one;
   # we'll assume that this is our piece of paper in the image
   (cnts, _) = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -29,16 +29,30 @@ KNOWN_DISTANCE = 72.0
 KNOWN_WIDTH = 12.0
  
 # initialize the list of images that we'll be using
-IMAGE_PATHS = ["IMG_020.JPG"]
+IMAGE_PATHS = ["car.png"]
  
 # load the first image that contains an object that is KNOWN TO BE 6 feet
 # from our camera, then find the license plate in the image, and initialize
 # the focal length
-image = cv2.imread(IMAGE_PATHS[0])
-marker = find_marker(image)
+image = cv2.imread('car.png')
+
+marker = find_license(image)
 focalLength = (marker[1][0] * KNOWN_DISTANCE) / KNOWN_WIDTH
 
-print(focalLength)
+#print(focalLength)
+# load the image, find the marker in the image, then compute the
+# distance to the marker from the camera
+image = cv2.imread('car.png')
+marker = find_license(image)
+inches = distance_to_camera(KNOWN_WIDTH, focalLength, marker[1][0])
+ 
+# draw a bounding box around the image and display it
+box = np.int0(cv2.cv.BoxPoints(marker))
+cv2.drawContours(image, [box], -1, (0, 255, 0), 2)
+cv2.putText(image, "%.2fft" % (inches / 12),
+(image.shape[1] - 200, image.shape[0] - 20), cv2.FONT_HERSHEY_SIMPLEX,
+2.0, (0, 255, 0), 3)
+cv2.imwrite("image.png", image)
 #Set our capture object to dev0, assuming we only have one camera running
 cap=cv2.VideoCapture(0)
 #Variables to stop our loop...in reality we want 
