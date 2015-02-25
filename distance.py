@@ -10,13 +10,14 @@ def find_license(image):
   cv2.imwrite('detect.png', edged) 
   # find the contours in the edged image and keep the largest one;
   # we'll assume that this is our piece of paper in the image
-  (cnts, _) = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-  cnts=sorted(cnts, key = cv2.contourArea, reverse = True)[:20]
+  (cnts, _) = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  cnts=sorted(cnts, key = cv2.contourArea, reverse = True)[:10]
   # c = max(cnts, key = cv2.contourArea)
   # loop over our contours
   for c in cnts:
     peri = cv2.arcLength(c, True)
-    approx = cv2.approxPolyDP(c, 0.02 * peri, True)
+    approx = cv2.approxPolyDP(c, 0.01 * peri, True)
+   # if len(approx) == 4:
     cv2.drawContours(image, [approx], -1, (0,255,0), 3)
   # compute the bounding box of the of the paper region and return it
   return cv2.minAreaRect(c)
